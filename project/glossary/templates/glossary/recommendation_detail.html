@@ -1,0 +1,42 @@
+{% extends 'glossary/base.html' %}
+{% block content %}
+<div class="card-overlay">
+    <h2>Рекомендация: {{ recommendation.term.title }}</h2>
+    <div class="mb-3">
+        <a href="{% url 'recommendations_list' %}" class="btn btn-glossary mt-4">← Назад к списку рекомендаций</a>
+    </div>
+    <p class="text-white-50">{{ recommendation.created_at|date:"d E Y" }}</p>
+
+    <div class="mt-4">
+        <h4>О профессии:</h4>
+        <p>{{ recommendation.quote_about_profession|linebreaks }}</p>
+        {% if recommendation.video_about_profession %}
+            <div class="ratio ratio-16x9 mb-3">
+                {{ recommendation.video_about_profession|safe }}
+            </div>
+        {% endif %}
+
+        <h4 class="mt-3">Пример работ:</h4>
+        <p>{{ recommendation.quote_about_path|linebreaks }}</p>
+        {% if recommendation.video_about_path %}
+            <div class="ratio ratio-16x9 mb-3">
+                {{ recommendation.video_about_path|safe }}
+            </div>
+        {% endif %}
+
+        <h4 class="mt-3">Что необходимо освоить:</h4>
+        {% if recommendation.roadmap_image %}
+            <div class="mb-3">
+                <img src="{{ recommendation.roadmap_image.url }}" alt="Дорожная карта" class="img-fluid rounded shadow">
+            </div>
+        {% endif %}
+
+        <h4 class="mt-4">Термин в глоссарии:</h4>
+        <p>
+            <a href="{% url 'term_detail' term.id %}?from=recommendation_detail&rec_id={{ recommendation.id }}" class="btn btn-glossary">
+                Перейти к описанию термина
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

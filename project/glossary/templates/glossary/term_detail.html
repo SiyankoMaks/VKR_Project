@@ -1,0 +1,170 @@
+{% extends 'glossary/base.html' %}
+
+{% block content %}
+
+<style>
+  .btn-outline-secondary {
+      color: #ffffff;
+      border-color: #ffffff;
+      padding: 0.375rem 0.75rem;
+  }
+
+  .btn-outline-secondary:hover {
+      color: #474747;
+      background-color: #b8d0e6;
+      border-color: #6c757d;
+  }
+
+  /* Ссылки */
+  .related-term a {
+      color: #94c8ff;
+      text-decoration: none;
+  }
+
+  .related-term a:hover {
+      text-decoration: underline;
+      color: #ffffff;
+  }
+
+</style>
+
+<script>
+  const currentTermId = "{{ term.id }}";
+
+  function goBack() {
+    const firstId = sessionStorage.getItem("firstTermId");
+    const currentId = currentTermId;
+
+    if (firstId && firstId !== currentId) {
+      window.location.href = "/terms/" + firstId + "/";
+    } else {
+      const from = sessionStorage.getItem("firstReturnFrom");
+      const catId = sessionStorage.getItem("firstCategoryId");
+      const recId = sessionStorage.getItem("firstRecId");
+
+      if (from === "all_terms") {
+        window.location.href = "{% url 'all_terms' %}";
+      } else if (from === "category" && catId) {
+        window.location.href = "/category/" + catId + "/";
+      } else if (from === "recommendation_detail" && recId) {
+        window.location.href = "/recommendation_detail/" + recId + "/";
+      } else {
+        window.location.href = "{% url 'index' %}";
+      }
+    }
+  }
+
+  // Сохраняем return_from только один раз
+  const returnFrom = "{{ return_from }}";
+  const categoryId = "{{ category_id|default:'' }}";
+  const recId = "{{ rec_id|default:'' }}";
+
+  if (!sessionStorage.getItem("firstTermId")) {
+    sessionStorage.setItem("firstTermId", currentTermId);
+    sessionStorage.setItem("firstReturnFrom", returnFrom);
+    sessionStorage.setItem("firstCategoryId", categoryId);
+    sessionStorage.setItem("firstRecId", recId);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const isFirstTerm = sessionStorage.getItem("firstTermId") === currentTermId;
+
+    if (isFirstTerm) {
+      const storedReturnFrom = sessionStorage.getItem("firstReturnFrom");
+      const storedCategoryId = sessionStorage.getItem("firstCategoryId");
+      const storedRecId = sessionStorage.getItem("firstRecId");
+
+      const backLink = document.getElementById("back-link");
+      if (!backLink) return;
+
+      if (storedReturnFrom === "all_terms") {
+        backLink.href = "{% url 'all_terms' %}";
+        backLink.innerText = "← Назад ко всем терминам";
+        backLink.removeAttribute("onclick");
+      } else if (storedReturnFrom === "category" && storedCategoryId) {
+        backLink.href = "/category/" + storedCategoryId + "/terms";
+        backLink.innerText = "← Назад к категории";
+        backLink.removeAttribute("onclick");
+      } else if (storedReturnFrom === "recommendation_detail" && storedRecId) {
+        backLink.href = "/recommendation_detail/" + storedRecId + "/";
+        backLink.innerText = "← Назад к рекомендации";
+        backLink.removeAttribute("onclick");
+      } else {
+        backLink.href = "#";
+        backLink.setAttribute("onclick", "goBack()");
+        backLink.innerText = "← Назад";
+      }
+    }
+  });
+</script>
+
+  <div class="container">
+    <input type="hidden" id="return_from_var" value="{{ return_from }}">
+    <input type="hidden" id="category_id_var" value="{{ category_id|default:'' }}">
+    <input type="hidden" id="rec_id_var" value="{{ rec_id|default:'' }}">
+
+    <!-- Кнопка "Назад" -->
+    <div class="mb-3">
+      <a id="back-link" 
+        href="{% if return_from == 'all_terms' %}{% url 'all_terms' %}
+              {% elif return_from == 'category' and category_id %}{% url 'category_terms' category_id %}
+              {% elif return_from == 'recommendation_detail' and rec_id %}{% url 'recommendation_detail' rec_id %}
+              {% else %}#{% endif %}"
+        class="btn btn-outline-secondary"
+          {% if not return_from %} onclick="goBack()"{% endif %}>
+        {% if return_from == "all_terms" %} 
+          ← Назад ко всем терминам
+        {% elif return_from == "category" and category_id %} 
+          ← Назад к категории
+        {% elif return_from == "recommendation_detail" and rec_id %}
+          ← Назад к рекомендации
+        {% else %} 
+          ← Назад
+        {% endif %}
+      </a>
+    </div>
+
+    <h2>{{ term.title }}</h2>
+    <div class="row">
+      <div class="col-md-8">
+        <p>{{ term.description|linebreaksbr }}</p>
+
+        {% if term.image %}
+          <img src="{{ term.image.url }}" alt="{{ term.title }}" class="img-fluid">
+        {% endif %}
+
+        <hr>
+
+        <h4>Детали термина:</h4>
+        {% for detail in term_details %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ detail.section_title }}</h5>
+              <p>{{ detail.content|linebreaksbr|safe }}</p>
+
+              {% if detail.image %}
+                <img src="{{ detail.image.url }}" alt="{{ detail.section_title }}" class="img-fluid">
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="col-md-4">
+        <h5>См. также:</h5>
+        <ul>
+          {% for description, terms in related_terms_grouped.items %}
+            <li class="related-term">
+              {% for related_term in terms %}
+                <a href="{% url 'term_detail' related_term.id %}">{{ related_term.title }}</a>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+              {% if description %} — {{ description }}{% endif %}
+            </li>
+          {% empty %}
+              <li>Нет связанных терминов.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}

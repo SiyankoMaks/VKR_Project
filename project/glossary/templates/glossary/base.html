@@ -1,0 +1,203 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Глоссарий IT-специалиста</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        body::before {
+            content: "";
+            background-image: url("{% static 'images/background.png' %}");
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .overlay {
+            background: rgba(73, 75, 75, 0.5);
+            z-index: -1;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            color: white;
+        }
+
+        .navbar-dark .navbar-brand,
+        .navbar-dark .nav-link {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .container {
+            padding-bottom: 2rem;
+        }
+
+        .card-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-glossary {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid white;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-glossary:hover {
+            background-color: rgba(255, 255, 255, 0.35);
+            color: black;
+        }
+
+        h1, h2, h3, h4, h5, h6, p, a {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 255, 255, 0.4);
+        }
+
+        .navbar-nav .nav-link {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.05);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link:focus {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            color: #a9bcda !important;
+            font-weight: bold;
+            font-size: larger;
+        }
+        .navbar-toggler {
+            transition: all 0.2s ease-in-out;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.3rem;
+        }
+
+        .navbar-toggler:focus,
+        .navbar-toggler:focus-visible {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .navbar-toggler:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }       
+
+        /* Мобильная версия */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-overlay {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .btn-glossary {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+                margin-left: 1%;
+            }
+
+            .nav-link {
+                font-size: 1.2rem;
+                padding: 1rem 1.5rem;
+                margin-bottom: 0.3rem;
+                border-radius: 0.5rem;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+
+            .navbar-collapse {
+                background-color: rgba(50, 57, 63, 0.95);
+                margin-top: 1rem;
+                padding: 1rem;
+                border-radius: 0.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay"></div>
+
+    <div class="content-wrapper">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+            <div class="container-lg d-flex justify-content-start align-items-center">
+
+                <!-- Кнопка-бургер -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Переключить навигацию">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <a class="navbar-brand" href="{% url 'index' %}">Глоссарий IT-специалиста</a>
+
+                <!-- Меню -->
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'recommendations_list' %}active{% endif %}" href="{% url 'recommendations_list' %}">Рекомендации</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'index' %}">Категории</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'all_terms' %}active{% endif %}" href="{% url 'all_terms' %}">Все термины</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

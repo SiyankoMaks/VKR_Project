@@ -1,0 +1,217 @@
+{% extends 'glossary/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .custom-btn {
+        color: black;
+        background-color: rgb(173, 255, 176);
+        border: none;
+    }
+
+    .custom-btn:hover {
+        background-color: #48816d;
+        color: white;
+    }
+
+    .custom-danger-btn {
+        color: black;
+        background-color: rgb(255, 173, 173);
+        border: none;
+    }
+
+    .custom-danger-btn:hover {
+        background-color: #814848;
+        color: white;
+    }
+
+    .btn-detail {
+        background-color: #84bfff;
+        color: #ffffff;
+        border: none;
+        padding: 0.4rem 0.9rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-detail:hover {
+        background-color: #6082a7;
+        color: #ffffff;
+    }
+
+    .letter-filter a,
+    .letter-filter span {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0.4rem 0.6rem;
+        min-width: 2.3rem;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .btn-detail {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    .card.term-card:hover {
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+        transform: translateY(-3px);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #dee2e6;
+        color: #000;
+    }
+
+    @media (max-width: 768px) {
+        .pagination {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .pagination .page-item {
+            white-space: nowrap;
+        }
+    }
+</style>
+
+<div class="container py-4">
+    <h2 class="mb-4 text-center">📚 Все термины</h2>
+
+    <div class="letter-filter d-flex flex-wrap justify-content-start mb-4">
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}
+                {% if selected_category %}category={{ selected_category }}&{% endif %}
+                sort={{ sort_order }}"
+           class="btn btn-sm {% if not selected_letter %}btn-light{% else %}btn-outline-light{% endif %} m-1">
+            Все
+        </a>
+        {% for letter in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ' %}
+            {% if letter in available_letters %}
+                <a href="?letter={{ letter }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}&sort={{ sort_order }}"
+                   class="btn btn-sm {% if selected_letter == letter %}btn-light{% else %}btn-outline-light{% endif %} m-1">
+                    {{ letter }}
+                </a>
+            {% else %}
+                <span class="btn btn-sm btn-secondary m-1 disabled" style="color: #b0b0b0;">{{ letter }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <form method="get" class="row g-2 mb-4 align-items-end">
+        <div class="col-md-4">
+            <label for="search" class="form-label">🔍 Поиск</label>
+            <input type="text" name="q" id="search" value="{{ search_query }}" placeholder="Введите слово..." class="form-control shadow-sm">
+        </div>
+        <div class="col-md-3">
+            <label for="category" class="form-label">📁 Категория</label>
+            <select name="category" id="category" class="form-select shadow-sm">
+                <option value="">Все категории</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="sort" class="form-label">🔤 Сортировка</label>
+            <select name="sort" id="sort" class="form-select shadow-sm">
+                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>А–Я</option>
+                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Я–А</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex justify-content-between align-items-end">
+            <button type="submit" class="btn custom-btn w-100 shadow">Применить</button>
+            <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}sort={{ sort_order }}&letter=" class="btn custom-danger-btn ms-2 w-100 shadow">Сбросить</a>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for term in page_obj %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100 border-0 term-card">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ term.title }}</h5>
+                            <p class="card-text text-muted">{{ term.definition|truncatechars:100 }}</p>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'term_detail' term.id %}?from=all_terms" class="btn btn-detail">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center text-muted py-4">
+                <p>🙁 Нет терминов по заданным критериям.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <nav aria-label="Постраничная навигация">
+            <ul class="pagination justify-content-center mt-4 flex-wrap">
+                {% if page_obj.number > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}
+                            {% if selected_category %}category={{ selected_category }}&{% endif %}
+                            sort={{ sort_order }}&page=1">«</a>
+                    </li>
+                {% endif %}
+
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}
+                            {% if selected_category %}category={{ selected_category }}&{% endif %}
+                            sort={{ sort_order }}&page={{ page_obj.previous_page_number }}">←</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">←</span></li>
+                {% endif %}
+
+                {% for i in page_obj.paginator.page_range %}
+                    {% if i >= page_obj.number|add:"-2" and i <= page_obj.number|add:"2" %}
+                        {% if i == page_obj.number %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?{% if search_query %}q={{ search_query }}&{% endif %}
+                                    {% if selected_category %}category={{ selected_category }}&{% endif %}
+                                    sort={{ sort_order }}&page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}
+                            {% if selected_category %}category={{ selected_category }}&{% endif %}
+                            sort={{ sort_order }}&page={{ page_obj.next_page_number }}">→</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">→</span></li>
+                {% endif %}
+
+                {% if page_obj.number < page_obj.paginator.num_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}
+                            {% if selected_category %}category={{ selected_category }}&{% endif %}
+                            sort={{ sort_order }}&page={{ page_obj.paginator.num_pages }}">»</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

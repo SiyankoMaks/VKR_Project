@@ -1,0 +1,21 @@
+{% extends 'glossary/base.html' %}
+{% block content %}
+<div class="card-overlay">
+    <h2>Рекомендации</h2>
+    <div class="row">
+        {% for rec in recommendations_list %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 text-white bg-dark border-light shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ rec.term }}</h5>
+                        <p class="card-text">{{ rec.short_description|truncatechars:120 }}</p>
+                        <a href="{% url 'recommendation_detail' rec.pk %}" class="btn btn-glossary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>Пока нет рекомендаций.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
